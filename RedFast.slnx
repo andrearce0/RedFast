@@ -1,0 +1,6 @@
+<Solution>
+  <Project Path="RedFast.API/RedFast.API.csproj" Id="f3929695-45ff-41bc-99fb-1055dfa4e133" />
+  <Project Path="RedFast.Modules.Core/RedFast.Modules.Core.csproj" Id="ff7984b2-d7e5-4a28-a84c-16b11b197d0b" />
+  <Project Path="RedFast.Modules.Identity/RedFast.Modules.Identity.csproj" Id="9bb8399b-9f44-45d7-b20f-e94ad11727e8" />
+  <Project Path="RedFast.Modules.Notifications/RedFast.Modules.Notifications.csproj" Id="64c6e983-8864-4335-9807-999a8b61dfb4" />
+</Solution>
