@@ -16,6 +16,7 @@ using Microsoft.Extensions.Logging;
 using RedFast.Modules.Core.Features.Packages.AssignDriver;
 using RedFast.Modules.Core.Features.Packages.GetSenderPackages;
 using RedFast.Modules.Core.Features.Packages.GetAvailablePackages;
+using RedFast.Modules.Core.Infrastructure.Messaging;
 
 namespace RedFast.Modules.Core;
 
@@ -41,6 +42,8 @@ public static class DependencyInjection
         });
 
         services.AddValidatorsFromAssembly(assembly);
+
+        services.AddScoped<IMessageBus, RabbitMqMessageBus>();
 
         return services;
     }

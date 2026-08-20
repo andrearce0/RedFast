@@ -1,5 +1,6 @@
 ﻿using MediatR;
 using Microsoft.EntityFrameworkCore;
+using RedFast.Modules.Core.Infrastructure.Messaging;
 using RedFast.Modules.Core.Persistence;
 
 namespace RedFast.Modules.Core.Features.Packages.AssignDriver;
@@ -7,10 +8,13 @@ namespace RedFast.Modules.Core.Features.Packages.AssignDriver;
 public class AssignDriverHandler : IRequestHandler<AssignDriverCommand, Unit>
 {
     private readonly RedFastDbContext _context;
+    private readonly IMessageBus _messageBus;
 
-    public AssignDriverHandler(RedFastDbContext context)
+    public AssignDriverHandler(RedFastDbContext context,
+        IMessageBus messageBus)
     {
         _context = context;
+        _messageBus = messageBus;
     }
 
     public async Task<Unit> Handle(AssignDriverCommand command, CancellationToken cancellationToken)
@@ -23,10 +27,20 @@ public class AssignDriverHandler : IRequestHandler<AssignDriverCommand, Unit>
         if (package == null)
             throw new InvalidOperationException("Pacote informado não existe.");
 
+        var oldStatus = package.CurrentStatus.ToString();
+
         package.AssignDriver(driver.Id);
 
-        _context.Packages.Update(package);
         await _context.SaveChangesAsync(cancellationToken);
+
+        var eventMessage = new PackageStatusChangedEvent(
+                package.Id,
+                oldStatus,
+                package.CurrentStatus.ToString(),
+                DateTimeOffset.UtcNow
+            );
+
+        await _messageBus.PublishAsync(eventMessage, "package.status.changed");
 
         return Unit.Value;
     }

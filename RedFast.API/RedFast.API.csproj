@@ -19,6 +19,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\RedFast.Modules.Core\RedFast.Modules.Core.csproj" />
+    <ProjectReference Include="..\RedFast.Modules.Notifications\RedFast.Modules.Notifications.csproj" />
   </ItemGroup>
 
 </Project>

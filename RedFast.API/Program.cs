@@ -1,6 +1,7 @@
 using RedFast.API.Middlewares;
 using RedFast.Modules.Core;
 using RedFast.API.Extensions;
+using RedFast.Modules.Notifications.Infrastructure.Messaging;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -15,6 +16,8 @@ builder.Services.AddOpenApi();
 
 builder.Services.AddExceptionHandler<GlobalValidationExceptionHandler>();
 builder.Services.AddProblemDetails();
+
+builder.Services.AddHostedService<RabbitMqConsumer>();
 
 var app = builder.Build();
 
