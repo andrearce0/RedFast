@@ -1,22 +1,22 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using FluentValidation;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Routing;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using RedFast.Modules.Core.Behaviors;
+using RedFast.Modules.Core.Features.Auth.LoginUser;
+using RedFast.Modules.Core.Features.Auth.RegisterUser;
+using RedFast.Modules.Core.Features.Packages.AssignDriver;
+using RedFast.Modules.Core.Features.Packages.CreatePackage;
+using RedFast.Modules.Core.Features.Packages.GetAvailablePackages;
+using RedFast.Modules.Core.Features.Packages.GetDriverActivePackages;
+using RedFast.Modules.Core.Features.Packages.GetSenderPackages;
+using RedFast.Modules.Core.Features.Packages.UpdatePackageStatus;
+using RedFast.Modules.Core.Infrastructure.Messaging;
 using RedFast.Modules.Core.Persistence;
 using System.Reflection;
-using FluentValidation;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Routing;
-using Microsoft.AspNetCore.Http;
-using RedFast.Modules.Core.Features.Packages.CreatePackage;
-using RedFast.Modules.Core.Behaviors;
-using RedFast.Modules.Core.Features.Packages.UpdatePackageStatus;
-using RedFast.Modules.Core.Features.Auth.RegisterUser;
-using RedFast.Modules.Core.Features.Auth.LoginUser;
-using Microsoft.Extensions.Logging;
-using RedFast.Modules.Core.Features.Packages.AssignDriver;
-using RedFast.Modules.Core.Features.Packages.GetSenderPackages;
-using RedFast.Modules.Core.Features.Packages.GetAvailablePackages;
-using RedFast.Modules.Core.Infrastructure.Messaging;
 
 namespace RedFast.Modules.Core;
 
@@ -30,9 +30,6 @@ public static class DependencyInjection
         {
             options.UseSqlServer(
                 configuration.GetConnectionString("DefaultConnection"));
-
-            //options.LogTo(Console.WriteLine, LogLevel.Information); // Vai imprimir o SQL no terminal
-            //options.EnableSensitiveDataLogging(); // Vai mostrar os valores das variáveis (ex: o Id exato)
         });   
 
         services.AddMediatR(config =>
@@ -57,6 +54,7 @@ public static class DependencyInjection
         packageGroup.MapAssignDriverEndpoint();
         packageGroup.MapGetSenderPackages();
         packageGroup.MapGetAvailablePackages();
+        packageGroup.MapGetDriverActivePackages();
 
         var authGroup = endpoints.MapGroup("/api/auth")
                             .WithTags("Authentication");
