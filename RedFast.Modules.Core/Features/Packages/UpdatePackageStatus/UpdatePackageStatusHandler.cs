@@ -1,6 +1,7 @@
 ﻿using MediatR;
 using Microsoft.EntityFrameworkCore;
 using RedFast.Modules.Core.Entities.Enums;
+using RedFast.Modules.Core.Infrastructure.Messaging;
 using RedFast.Modules.Core.Persistence;
 
 namespace RedFast.Modules.Core.Features.Packages.UpdatePackageStatus;
@@ -8,10 +9,13 @@ namespace RedFast.Modules.Core.Features.Packages.UpdatePackageStatus;
 public class UpdatePackageStatusHandler : IRequestHandler<UpdatePackageStatusCommand, Unit>
 {
     private readonly RedFastDbContext _context;
+    private readonly IMessageBus _messageBus;
 
-    public UpdatePackageStatusHandler(RedFastDbContext context)
+    public UpdatePackageStatusHandler(RedFastDbContext context,
+        IMessageBus messageBus)
     {
         _context = context;
+        _messageBus = messageBus;
     }
 
     public async Task<Unit> Handle(UpdatePackageStatusCommand request, CancellationToken cancellationToken)
@@ -31,13 +35,20 @@ public class UpdatePackageStatusHandler : IRequestHandler<UpdatePackageStatusCom
                 throw new UnauthorizedAccessException("Acesso negado: você não tem autorização para alterar este pacote");
         }
 
-        if(package.CurrentStatus == PackageStatus.Delivered ||
-            package.CurrentStatus == PackageStatus.DeliveryFailed)
-            throw new InvalidOperationException("Não é possível atualizar o status de um pacote que já concluído.");
+        var oldStatus = package.CurrentStatus.ToString();
 
         package.UpdateStatus(request.NewStatus, request.Description, request.Location);
 
         await _context.SaveChangesAsync(cancellationToken);
+
+        var statusEvent = new PackageStatusChangedEvent(
+            package.Id,
+            oldStatus,
+            package.CurrentStatus.ToString(),
+            DateTimeOffset.UtcNow
+        );
+
+        await _messageBus.PublishAsync(statusEvent, "package.status.changed");
 
         return Unit.Value;
     }

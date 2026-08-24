@@ -45,6 +45,23 @@ public class Package
 
     public void UpdateStatus(PackageStatus newStatus, string? description = null, string? location = null)
     {
+        bool isValidTransition = CurrentStatus switch
+        {
+            PackageStatus.Created => newStatus == PackageStatus.AwaitingPickup,
+
+            PackageStatus.AwaitingPickup => newStatus == PackageStatus.Collected,
+
+            PackageStatus.Collected => newStatus == PackageStatus.Delivered || newStatus == PackageStatus.DeliveryFailed,
+
+            PackageStatus.Delivered => false,
+            PackageStatus.DeliveryFailed => false,
+
+            _ => false
+        };
+
+        if (!isValidTransition)
+            throw new InvalidOperationException($"Transição de status inválida: não é possível alterar de {CurrentStatus} para {newStatus}");
+
         CurrentStatus = newStatus;
 
         _events.Add(new PackageEvent
