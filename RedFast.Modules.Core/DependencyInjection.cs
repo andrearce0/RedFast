@@ -13,6 +13,7 @@ using RedFast.Modules.Core.Features.Packages.CreatePackage;
 using RedFast.Modules.Core.Features.Packages.GetAvailablePackages;
 using RedFast.Modules.Core.Features.Packages.GetDriverActivePackages;
 using RedFast.Modules.Core.Features.Packages.GetDriverHistory;
+using RedFast.Modules.Core.Features.Packages.GetPackageTracking;
 using RedFast.Modules.Core.Features.Packages.GetSenderPackages;
 using RedFast.Modules.Core.Features.Packages.UpdatePackageStatus;
 using RedFast.Modules.Core.Infrastructure.Messaging;
@@ -57,6 +58,7 @@ public static class DependencyInjection
         packageGroup.MapGetAvailablePackages();
         packageGroup.MapGetDriverActivePackages();
         packageGroup.MapGetDriverHistory();
+        packageGroup.MapGetPackageTracking();
 
         var authGroup = endpoints.MapGroup("/api/auth")
                             .WithTags("Authentication");
