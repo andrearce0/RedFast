@@ -23,7 +23,7 @@ public class UpdatePackageStatusHandler : IRequestHandler<UpdatePackageStatusCom
         var package = await _context.Packages.Include(p => p.Events).FirstOrDefaultAsync(p => p.Id == request.PackageId, cancellationToken);
 
         if (package == null)
-            throw new Exception("Pacote não encontrado.");
+            throw new InvalidOperationException("Pacote não encontrado.");
         
         if (request.UserRole == "driver")
         {
