@@ -36,6 +36,6 @@ public class GetPackageTrackingHandler : IRequestHandler<GetPackageTrackingQuery
             ))
             .FirstOrDefaultAsync(cancellationToken);
 
-        return packageTracking;
+        return packageTracking!;
     }
 }

@@ -66,4 +66,28 @@ public class UpdatePackageStatusHandlerTests
             Arg.Any<PackageStatusChangedEvent>(),
             "package.status.changed");
     }
+
+    [Fact]
+    public async Task Handle_PackageNotFound_ShouldThrowExceptionAndNotPublishMessage()
+    {
+        var command = new UpdatePackageStatusCommand
+        (
+            UserId: Guid.NewGuid(),
+            UserRole: "admin",
+            PackageId: Guid.NewGuid(),
+            NewStatus: PackageStatus.AwaitingPickup,
+            Description: "",
+            Location: ""
+        );
+
+        Func<Task> action = async () => await _handler.Handle(command, CancellationToken.None);
+
+        await action.Should().ThrowAsync<InvalidOperationException>()
+            .WithMessage("*não encontrado*");
+
+        await _messageBusMock.DidNotReceive().PublishAsync(
+            Arg.Any<PackageStatusChangedEvent>(),
+            Arg.Any<string>()
+        );
+    }
 }
