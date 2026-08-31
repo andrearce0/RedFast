@@ -3,4 +3,5 @@
 public interface IMessageBus
 {
     Task PublishAsync<T>(T message, string routingKey);
+    Task PublishJsonAsync(string json, string routingKey);
 }

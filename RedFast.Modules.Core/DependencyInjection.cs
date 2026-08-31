@@ -42,7 +42,7 @@ public static class DependencyInjection
 
         services.AddValidatorsFromAssembly(assembly);
 
-        services.AddScoped<IMessageBus, RabbitMqMessageBus>();
+        services.AddSingleton<IMessageBus, RabbitMqMessageBus>();
 
         return services;
     }

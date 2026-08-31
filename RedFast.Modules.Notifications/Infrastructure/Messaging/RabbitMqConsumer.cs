@@ -1,7 +1,5 @@
 ﻿using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
-using System.Runtime.InteropServices;
-using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 
@@ -39,17 +37,27 @@ public class RabbitMqConsumer : BackgroundService
 
         consumer.ReceivedAsync += async (model, ea) =>
         {
-            var body = ea.Body.ToArray();
-            var message = Encoding.UTF8.GetString(body);
+            try
+            {
+                var body = ea.Body.ToArray();
+                var message = Encoding.UTF8.GetString(body);
 
-            var @event = JsonSerializer.Deserialize<PackageStatusChangedEvent>(message);
+                var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
+                var @event = JsonSerializer.Deserialize<PackageStatusChangedEvent>(message, options);
 
 
-            _logger.LogInformation(
-                "[x] PUSH ENVIADO: Cliente notificado que o pacote { Id} mudou de { Old} para { New}",
-                @event?.PackageId, @event?.OldStatus, @event?.NewStatus);
+                _logger.LogInformation(
+                    "[x] PUSH ENVIADO: Cliente notificado que o pacote {Id} mudou de {Old} para {New}",
+                    @event?.PackageId, @event?.OldStatus, @event?.NewStatus);
 
-            await channel.BasicAckAsync(deliveryTag: ea.DeliveryTag, multiple: false);
+                await channel.BasicAckAsync(deliveryTag: ea.DeliveryTag, multiple: false);
+            }
+            catch (Exception ex) 
+            {
+                _logger.LogError(ex, "[!] Falha ao processar e desserializar a mensagem do RabbitMQ.");
+
+                await channel.BasicNackAsync(deliveryTag: ea.DeliveryTag, multiple: false, requeue: false);
+            }
         };
 
         await channel.BasicConsumeAsync(queue: _queueName, autoAck: false, consumer: consumer);
