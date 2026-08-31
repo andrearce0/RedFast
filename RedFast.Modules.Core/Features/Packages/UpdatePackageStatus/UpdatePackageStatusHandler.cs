@@ -1,21 +1,19 @@
 ﻿using MediatR;
 using Microsoft.EntityFrameworkCore;
-using RedFast.Modules.Core.Entities.Enums;
+using RedFast.Modules.Core.Entities.Outbox;
 using RedFast.Modules.Core.Infrastructure.Messaging;
 using RedFast.Modules.Core.Persistence;
+using System.Text.Json;
 
 namespace RedFast.Modules.Core.Features.Packages.UpdatePackageStatus;
 
 public class UpdatePackageStatusHandler : IRequestHandler<UpdatePackageStatusCommand, Unit>
 {
     private readonly RedFastDbContext _context;
-    private readonly IMessageBus _messageBus;
 
-    public UpdatePackageStatusHandler(RedFastDbContext context,
-        IMessageBus messageBus)
+    public UpdatePackageStatusHandler(RedFastDbContext context)
     {
         _context = context;
-        _messageBus = messageBus;
     }
 
     public async Task<Unit> Handle(UpdatePackageStatusCommand request, CancellationToken cancellationToken)
@@ -39,8 +37,6 @@ public class UpdatePackageStatusHandler : IRequestHandler<UpdatePackageStatusCom
 
         package.UpdateStatus(request.NewStatus, request.Description, request.Location);
 
-        await _context.SaveChangesAsync(cancellationToken);
-
         var statusEvent = new PackageStatusChangedEvent(
             package.Id,
             oldStatus,
@@ -48,7 +44,15 @@ public class UpdatePackageStatusHandler : IRequestHandler<UpdatePackageStatusCom
             DateTimeOffset.UtcNow
         );
 
-        await _messageBus.PublishAsync(statusEvent, "package.status.changed");
+        var outboxMessage = new OutboxMessage
+        {
+            EventType = statusEvent.GetType().AssemblyQualifiedName ?? statusEvent.GetType().Name,
+            Content = JsonSerializer.Serialize(statusEvent)
+        };
+
+        _context.OutboxMessages.Add(outboxMessage);
+
+        await _context.SaveChangesAsync(cancellationToken);
 
         return Unit.Value;
     }

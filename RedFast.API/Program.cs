@@ -1,6 +1,7 @@
+using RedFast.API.Extensions;
 using RedFast.API.Middlewares;
 using RedFast.Modules.Core;
-using RedFast.API.Extensions;
+using RedFast.Modules.Core.Infrastructure.Messaging;
 using RedFast.Modules.Notifications.Infrastructure.Messaging;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -13,10 +14,10 @@ builder.Services.AddJwtAuthentication(builder.Configuration);
 
 builder.Services.AddOpenApi();
 
-
 builder.Services.AddExceptionHandler<GlobalValidationExceptionHandler>();
 builder.Services.AddProblemDetails();
 
+builder.Services.AddHostedService<OutboxProcessorBackgroundService>();
 builder.Services.AddHostedService<RabbitMqConsumer>();
 
 var app = builder.Build();
